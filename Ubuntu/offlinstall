@@ -1,0 +1,153 @@
+#!/bin/bash
+
+org="/etc/apt/sources.list.org"
+
+SUDO=`which sudo` || `which gksudo` || `which kdesudo` || exit 316
+FILE=`zenity --file-selection --file-filter=*.tar --title="Select Offline Update Package"`
+case $? in
+	0)
+		DEST=`zenity --file-selection --directory --title="Select Destination Directory"`
+		case $? in
+			0)
+				tar -xvf $FILE -C $DEST
+				if [ -e $org ]; then
+					"$SUDO" rm -rf /etc/apt/sources.list
+					touch ./temp-sources.list
+					"$SUDO" chmod 777 ./temp-sources.list
+					echo "deb file://$DEST/offline-backup ./" >> ./temp-sources.list
+					"$SUDO" mv ./temp-sources.list /etc/apt/sources.list 
+					"$SUDO" chmod 644 /etc/apt/sources.list
+				else
+					"$SUDO" mv /etc/apt/sources.list /etc/apt/sources.list.org
+					touch ./temp-sources.list
+					"$SUDO" chmod 777 ./temp-sources.list
+					echo "deb file://$DEST/offline-backup ./" >> ./temp-sources.list
+					"$SUDO" mv ./temp-sources.list /etc/apt/sources.list 
+					"$SUDO" chmod 644 /etc/apt/sources.list
+				fi
+				"$SUDO" apt-get update
+				zenity --question --text="Do you want to Delete offline-update.tar?" --ok-label="Yes" --cancel-label="No"
+				if [ $? -eq 0 ]; then
+						"$SUDO" rm -Rf $FILE
+				fi
+				zenity --question --text="Do you want to Install packages now?" --ok-label="Yes" --cancel-label="No"
+				if [ $? -eq 0 ]; then
+					INSTALL=$(zenity --list --checklist --width="500" --height="450" --title="Install Application" \
+					--text="Please select the applications you want to Install:" \
+					--column="Check:" --column="Name:" --column="Description:" \
+					TRUE "Ubuntu Tweak" "System Configuration Tool" \
+					TRUE "Compizconfig" "3D desktop visual effects manager" \
+					TRUE "GNOME Do" "Application quick-run" \
+					FALSE "Wine" "Windows Application Emulator" \
+					TRUE "VLC" "Media Player" \
+					TRUE "Restricted-Extra" "Media Codecs" \
+					FALSE "Pidgin" "Internet Messenger" \
+					FALSE "GIMP" "Photo Editing Software" \
+					TRUE "ChmSee" "CHM document reader" \
+					FALSE "Cheese" "Webcam Booth" \
+					FALSE "AcetoneISO" "CD Image browser" \
+					TRUE "RAR" "Multiple volume support RAR archiver" --separator=':')
+					IFS=":" ; for WORD in $INSTALL ; do
+						case $WORD in
+							  "Ubuntu Tweak")
+									"$SUDO" apt-get --yes -q --force-yes install ubuntu-tweak;;
+							  "Compizconfig")
+									"$SUDO" apt-get --yes -q --force-yes install compizconfig-settings-manager compiz-fusion-plugins-extra;;
+							  "GNOME Do")
+									"$SUDO" apt-get --yes -q --force-yes install gnome-do;;
+							  "Wine")
+									"$SUDO" apt-get --yes -q --force-yes install wine;;
+							  "VLC")
+									"$SUDO" apt-get --yes -q --force-yes install vlc;;
+							  "Restricted-Extra")
+									"$SUDO" apt-get --yes -q --force-yes install ubuntu-restricted-extras;;
+							  "Pidgin")
+									"$SUDO" apt-get --yes -q --force-yes install pidgin;;
+							  "GIMP")
+									"$SUDO" apt-get --yes -q --force-yes install gimp;;
+							  "ChmSee")
+									"$SUDO" apt-get --yes -q --force-yes install chmsee;;
+							  "Cheese")
+									"$SUDO" apt-get --yes -q --force-yes install cheese;;
+							  "AcetoneISO")
+									"$SUDO" apt-get --yes -q --force-yes install acetoneiso;;
+							  "RAR")
+									"$SUDO" apt-get --yes -q --force-yes install rar;;
+						esac
+					done
+				fi
+				zenity --question --text="Do you want to Upgrade installed packages?" --ok-label="Yes" --cancel-label="No"
+				if [ $? -eq 0 ]; then
+						"$SUDO" apt-get upgrade
+						zenity --info --text="Upgrade Complete! Restart Require!"
+				fi
+				;;
+			1)
+				echo "No Directory Selected.";;
+			-1)
+				echo "No Directory Selected.";;
+		esac
+		;;
+	1)
+		zenity --question --text="Do you want to Update package Sources?" --ok-label="Yes" --cancel-label="No"
+		if [ $? -eq 0 ]; then
+			"$SUDO" apt-get update
+		fi
+		zenity --question --text="Do you want to Install packages now?" --ok-label="Yes" --cancel-label="No"
+		if [ $? -eq 0 ]; then
+			INSTALL=$(zenity --list --checklist --width="500" --height="450" --title="Install Application" \
+			--text="Please select the applications you want to Install:" \
+			--column="Check:" --column="Name:" --column="Description:" \
+			TRUE "Ubuntu Tweak" "System Configuration Tool" \
+			TRUE "Compizconfig" "3D desktop visual effects manager" \
+			TRUE "GNOME Do" "Application quick-run" \
+			FALSE "Wine" "Windows Application Emulator" \
+			TRUE "VLC" "Media Player" \
+			TRUE "Restricted-Extra" "Media Codecs" \
+			FALSE "Pidgin" "Internet Messenger" \
+			FALSE "GIMP" "Photo Editing Software" \
+			TRUE "ChmSee" "CHM document reader" \
+			FALSE "Cheese" "Webcam Booth" \
+			FALSE "AcetoneISO" "CD Image browser" \
+			TRUE "RAR" "Multiple volume support RAR archiver" --separator=':')
+			IFS=":" ; for WORD in $INSTALL ; do
+				case $WORD in
+                      "Ubuntu Tweak")
+							"$SUDO" apt-get --yes -q --force-yes install ubuntu-tweak;;
+                      "Compizconfig")
+							"$SUDO" apt-get --yes -q --force-yes install compizconfig-settings-manager compiz-fusion-plugins-extra;;
+                      "GNOME Do")
+							"$SUDO" apt-get --yes -q --force-yes install gnome-do;;
+                      "Wine")
+							"$SUDO" apt-get --yes -q --force-yes install wine;;
+                      "VLC")
+							"$SUDO" apt-get --yes -q --force-yes install vlc;;
+                      "Restricted-Extra")
+							"$SUDO" apt-get --yes -q --force-yes install ubuntu-restricted-extras;;
+                      "Pidgin")
+							"$SUDO" apt-get --yes -q --force-yes install pidgin;;
+                      "GIMP")
+							"$SUDO" apt-get --yes -q --force-yes install gimp;;
+                      "ChmSee")
+							"$SUDO" apt-get --yes -q --force-yes install chmsee;;
+                      "Cheese")
+							"$SUDO" apt-get --yes -q --force-yes install cheese;;
+                      "AcetoneISO")
+							"$SUDO" apt-get --yes -q --force-yes install acetoneiso;;
+                      "RAR")
+							"$SUDO" apt-get --yes -q --force-yes install rar;;
+				esac
+			done
+		fi
+		zenity --question --text="Do you want to Upgrade installed packages?" --ok-label="Yes" --cancel-label="No"
+		if [ $? -eq 0 ]; then
+			"$SUDO" apt-get --yes -q --force-yes upgrade
+			zenity --info --text="Upgrade Complete! Restart Require!"
+		fi
+		;;
+	-1)
+		echo "No File Selected.";;
+esac
+
+#Created by Naing Ye Minn (naingyeminn@gmail.com)
+#http://seriousblaze.u4mm.com

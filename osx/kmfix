@@ -1,0 +1,61 @@
+#!/bin/bash
+#This script is just a temporary fix for KeyMagic issue in Mac OS X login.
+#Written by NAING YE MINN <me@naingyeminn.com>
+
+FILE="/Library/Input Methods/KeyMagic.app/Contents/Info.plist"
+isLang=$(cat "$FILE" | grep "my_BU" | wc -l)
+vcheck=$(cat "$FILE" | grep "1.5.1" | wc -l)
+
+km151() {
+	sudo sed -i.bak 's/mul/my_BU/' "$FILE"
+}
+
+km150() {
+	awk '/KeyMagic_black.icns/ {print; print "\t<key>TISIntendedLanguage</key>\n\t<string>my_BU</string>"; next }1' "$FILE.bak" > "$FILE"
+}
+
+setLang() {
+	if [ $vcheck == 1 ]
+	then
+		km151
+		echo "Set Language as my_BU"
+	else
+		if [ -f "$FILE.bak" ]
+		then
+			km150
+			echo "Set Language as my_BU"
+		else
+			cp "$FILE" "$FILE.bak"
+			km150
+			echo "Set Language as my_BU"
+		fi
+	fi
+}
+
+rollback() {
+	read -p "Want to rollback? [y/N]" -n 1 -r
+	if [[ $REPLY =~ ^[Yy]$ ]]
+	then
+		if [ $vcheck == 1 ]
+		then
+			sudo cp "$FILE.bak" "$FILE"
+		else
+			cp "$FILE.bak" "$FILE"
+		fi
+		echo ""
+		echo "Successfully rollback"
+	else
+		echo ""
+		echo "Did not rollback"
+	fi
+}
+
+if [ -f "$FILE" ]; then
+	if [ $isLang == 1 ]
+	then
+		echo "Language has already been set"
+		rollback
+	else
+		setLang
+	fi
+fi

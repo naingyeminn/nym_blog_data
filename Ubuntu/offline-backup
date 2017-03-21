@@ -1,0 +1,54 @@
+#!/bin/bash
+day=$(date)
+hostname=$(hostname -s)
+
+SUDO=`which sudo` || `which kdesudo` || `which gksudo` || exit 316
+
+if [ -e /usr/bin/dpkg-repack ]; then
+	echo
+	echo "DPKG-REPACK is Ready"
+	echo
+	sleep 2
+else #download it
+	echo
+	echo "installing dpkg-repack"
+	echo
+	sleep 2
+    "$SUDO" apt-get install -y --force-yes dpkg-repack
+fi
+
+if [ -e "/usr/bin/fakeroot" ]; then
+	echo
+	echo "FakeRoot is Ready"
+	echo
+	sleep 2
+else #download it
+	echo	
+	echo "installing fakeroot"
+	echo
+	sleep 2
+	"$SUDO" apt-get install -y --force-yes fakeroot
+fi
+
+mkdir ~/offline-backup; cd ~/offline-backup
+
+echo "$USER@$hostname make this backup @ $day" > ReadMe.txt 
+echo "This backup includes following packages : " >> ReadMe.txt
+dpkg --get-selections | grep install | cut -f1 >> ReadMe.txt
+
+fakeroot -u dpkg-repack `dpkg --get-selections | grep install | cut -f1`
+dpkg-scanpackages ./ /dev/null | gzip > Packages.gz
+cd ~/
+tar -cvf ~/Desktop/offline-update.tar offline-backup
+"$SUDO" rm -Rf ~/offline-backup
+echo
+echo "Your packages have been repacked."
+echo
+echo "See @ Desktop"
+echo
+sleep 3
+exit
+
+
+
+
